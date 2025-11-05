@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Pharmacy Verification</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <style>
+        main { max-width: 920px; margin: 2rem auto; }
+    </style>
+    {% csrf_token %}
+    {% load static %}
+    {% load static %}
+</head>
+<body>
+<main>
+    <h2>Pharmacy Fraud Detection</h2>
+    <form method="post" action="{% url 'verify' %}">
+        {% csrf_token %}
+        <div class="grid">
+            <label>
+                Pharmacy Name
+                {{ form.pharmacy_name }}
+            </label>
+            <label>
+                PBM Name (optional)
+                {{ form.pbm_name }}
+            </label>
+        </div>
+        <label>
+            Address (optional)
+            {{ form.address }}
+        </label>
+        <button type="submit">Verify</button>
+    </form>
+</main>
+</body>
+</html>
+

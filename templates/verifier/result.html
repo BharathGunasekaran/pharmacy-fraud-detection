@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Verification Result</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <style>
+        main { max-width: 1024px; margin: 2rem auto; }
+        .map { width: 100%; height: 450px; border: 0; }
+        .meta { font-size: .95rem; color: #444; }
+        .badge { display: inline-block; padding: .25rem .5rem; border-radius: .5rem; }
+        .Found { background: #e6ffed; color: #036632; }
+        .Not\ Found { background: #fff3cd; color: #7a5e00; }
+        .Fraud\ Pharmacy { background: #ffe6e6; color: #8b0000; }
+    </style>
+</head>
+<body>
+<main>
+    <a href="{% url 'home' %}">← New Search</a>
+    <h2>Result: <span class="badge {{ classification }}">{{ classification }}</span></h2>
+
+    <section>
+        <h4>Details</h4>
+        <ul class="meta">
+            <li><strong>Pharmacy:</strong> {{ pharmacy_name }}</li>
+            {% if pbm_name %}<li><strong>PBM:</strong> {{ pbm_name }}</li>{% endif %}
+            {% if input_address %}<li><strong>Input Address:</strong> {{ input_address }}</li>{% endif %}
+            {% if scraped_address %}<li><strong>Scraped Address:</strong> {{ scraped_address }}</li>{% endif %}
+            {% if official_url %}<li><strong>Official URL:</strong> <a href="{{ official_url }}" target="_blank" rel="noreferrer noopener">{{ official_url }}</a></li>{% endif %}
+        </ul>
+    </section>
+
+    {% if scraped_matches %}
+    <section>
+        <h4>Scraped Addresses (web)</h4>
+        <table>
+            <thead>
+                <tr><th>Address</th><th>Near Input</th><th>Distance (km)</th></tr>
+            </thead>
+            <tbody>
+                {% for it in scraped_matches %}
+                <tr>
+                    <td>{{ it.address }}</td>
+                    <td>{% if it.is_match %}True{% else %}False{% endif %}</td>
+                    <td>{% if it.distance_km %}{{ it.distance_km }}{% else %}-{% endif %}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+    {% endif %}
+
+    {% if streetview or coords %}
+    <section>
+        <h4>Street View</h4>
+        <!-- If MAPS_API_KEY is present, attempt Google Street View embed; else fallback to Google Maps with imagery layer -->
+        {% if MAPS_API_KEY %}
+            {% if streetview and streetview.pano_id %}
+                <iframe class="map" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+                        src="https://www.google.com/maps/embed/v1/streetview?key={{ MAPS_API_KEY }}&pano={{ streetview.pano_id }}&heading=210&pitch=10&fov=75&source=outdoor">
+                </iframe>
+            {% else %}
+                <iframe class="map" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+                        src="https://www.google.com/maps/embed/v1/streetview?key={{ MAPS_API_KEY }}&location={{ coords.0 }},{{ coords.1 }}&heading=210&pitch=10&fov=75&source=outdoor">
+                </iframe>
+            {% endif %}
+        {% else %}
+            {% if coords %}
+                <iframe class="map" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+                        src="https://www.google.com/maps?q={{ coords.0 }},{{ coords.1 }}&layer=c&cbll={{ coords.0 }},{{ coords.1 }}&cbp=12,0,0,0,0">
+                </iframe>
+            {% else %}
+                <p>No coordinates available for map preview.</p>
+            {% endif %}
+        {% endif %}
+        <p class="meta">Tip: Set <code>MAPS_API_KEY</code> in <code>.env</code> for reliable Street View.</p>
+    </section>
+    {% else %}
+        <p>No geospatial location found to display street view.</p>
+    {% endif %}
+
+</main>
+</body>
+</html>
+
